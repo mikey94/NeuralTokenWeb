@@ -146,6 +146,10 @@ a.secondary {
   cursor: 'pointer';
   width: 100;
   height: 30;
+  text-transform: uppercase;
+}
+.filterBtn:hover {
+  background-color: #fb5800;
 }
 
 .predictedChartWrapper {
@@ -156,7 +160,7 @@ a.secondary {
 
 .predictBtn {
   padding: '10px 20px';
-  margin-top: 20;
+  margin: 20;
   font-size: '10px';
   background-color: #1317f9;
   color: 'white';
@@ -165,7 +169,36 @@ a.secondary {
   cursor: 'pointer';
   width: 100;
   height: 30;
+  text-transform: uppercase;
 }
+.predictBtn:hover {
+  background-color: #fb5800;
+}
+
+.predictedText {
+  margin-top: 15;
+  color: #f5f913;
+}
+
+.resetBtn {
+  padding: '10px 20px';
+  margin: 20;
+  font-size: '10px';
+  background-color: #ff2200;
+  color: 'white';
+  border: 1px solid #ff2200;
+  border-radius: 5;
+  cursor: 'pointer';
+  width: 100;
+  height: 30;
+  text-transform: uppercase;
+}
+
+.btnWrapper {
+  display: flex;
+  flex-direction: row;
+}
+
 
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {

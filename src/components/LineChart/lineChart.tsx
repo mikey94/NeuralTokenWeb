@@ -31,5 +31,5 @@ interface ILineChart {
 }
 
 export default function LineChart({data, options}: Readonly<ILineChart>) {
-    return <Line data={data} options={options} width={500} height={300}/>
+    return <Line data={data} options={options} />
 }

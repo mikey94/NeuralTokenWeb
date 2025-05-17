@@ -25,33 +25,15 @@ export default function Home() {
   const [nextDayPrediction, setNextDayPrediction] = useState<NextDayPrediction | null>(null)
   const [nextWeekPrediction, setNextWeekPrediction] = useState<NextWeekPrediction | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(false)
-  const [year, setYear] = useState<number>(2024)
-  const [month, setMonth] = useState<number>(10)
+  const [year, setYear] = useState<number>(2025)
+  const [month, setMonth] = useState<number>(3)
   const [dailyChanges, setDailyChanges] = useState<Array<DailyChanges>>([])
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
-  const [lastSevenDaysValues, setLastSevenDaysValues] = useState<Array<DailyChanges>>([])
+  const [predictValues, setPredictValues] = useState<Array<DailyChanges>>([])
   const [isSinglePredicted, setIsSinglePredicted] = useState<boolean>(false);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const dayRes = await getNextDayPrediction()
-  //       const weekRes = await getNextWeekPrediction()
-
-  //       setNextDayPrediction(dayRes)
-  //       setNextWeekPrediction(weekRes)
-
-  //     } catch (err) {
-  //       console.error('Failed to load predictions', err)
-  //     } finally {
-  //       setIsLoading(false)
-  //     }
-  //   }
-  //   fetchData()
-  // }, []);
-
-
+  const [isMultiplePredicted, setIsMultiplePredicted] = useState<boolean>(false);
+  const [isReset, setIsReset] = useState<boolean>(false);
 
   useEffect(() => {
     const getRecordsDetails = async() => {
@@ -65,27 +47,27 @@ export default function Home() {
       }
       catch (err) {
         console.log('getRecordsDetails', err)
-      } finally {
-        //
+        throw err
       }
     }
     getRecordsDetails()
   }, [])
 
   useEffect(() => {
+    setIsLoading(true)
     const fetchDailyChanges = async () => {
       setDailyChanges([])
       try {
         const dailyChanges: Array<DailyChanges> = await getDailyChanges(year, month)
         setDailyChanges(dailyChanges)
-        setLastSevenDaysValues(dailyChanges.slice(-7))
+        setPredictValues(dailyChanges.slice(-7))
         console.log('dailyChanges', dailyChanges)
       }
       catch (err) {
         console.log('Failed to load daily changes', err)
       }
       finally {
-        //
+        setIsLoading(false)
       }
     }
     fetchDailyChanges()
@@ -103,7 +85,7 @@ export default function Home() {
       labels: labels,
       datasets: [
         {
-          label: 'Close Value',
+          label: 'Market value',
           data: data,
           borderColor: 'rgba(75,192,192,1)',
           pointBackgroundColor: 'rgb(232, 37, 131)',
@@ -113,6 +95,7 @@ export default function Home() {
     }
     const options = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: 'top' as const,
@@ -120,7 +103,10 @@ export default function Home() {
         title: {
           display: true,
           text: `Ethereum Price Variation in year ${year}`,
-          color: '#ffff'
+          color: '#ffff',
+          font: {
+            size: 16
+          }
         },
       },
       scales: {
@@ -158,8 +144,6 @@ export default function Home() {
     return { chartData, options }
   }
 
-  // console.log('nextDayPrediction', nextDayPrediction)
-  // console.log('nextWeekPrediction', nextWeekPrediction)
   const onInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = parseInt(e.target.value)
     if (e.target.id=='year') {
@@ -176,7 +160,6 @@ export default function Home() {
       try {
         const dailyChanges = await getDailyChanges(year, month)
         setDailyChanges(dailyChanges)
-        console.log('dailyChanges', dailyChanges)
       }
       catch (err) {
         console.log('Failed to load daily changes', err)
@@ -192,7 +175,7 @@ export default function Home() {
   const generatePredictedChartData = () => {
     const labels: Array<string> = []
     const data: Array<number> = []
-    lastSevenDaysValues?.forEach(element => {
+    predictValues?.forEach(element => {
       labels.push(element.date)
       data.push(element.close)
     });
@@ -203,7 +186,7 @@ export default function Home() {
       labels: labels,
       datasets: [
         {
-          label: 'Close Value',
+          label: 'Market value',
           data: data,
           borderColor: 'rgb(86, 245, 23)',
           //pointBackgroundColor: 'rgb(0, 30, 255)',
@@ -216,14 +199,18 @@ export default function Home() {
     }
     const PredictedChartOptions = {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: {
           position: 'top' as const,
         },
         title: {
           display: true,
-          text: `Ethereum predicted price chart`,
-          color: '#ffff'
+          text: `Ethereum predicted price chart - Next day`,
+          color: '#ffff',
+          font: {
+            size: 16
+          }
         },
       },
       scales: {
@@ -259,26 +246,28 @@ export default function Home() {
     return { predictedChartData, PredictedChartOptions }
   }
 
-  const onPredictBtnPress = () => {
-    console.log('onPredictBtnPress')
+  const onNextDayPredictBtnPress = () => {
+    if (isMultiplePredicted) {
+      predictValues.splice(-7)
+      setPredictValues([...predictValues])
+      setIsMultiplePredicted(false)
+    }
     const fetchData = async () => {
       try {
         const dayRes = await getNextDayPrediction()
-        const weekRes = await getNextWeekPrediction()
-        console.log('dayRes', dayRes)
-        setNextDayPrediction(dayRes)
-        setNextWeekPrediction(weekRes)
 
-        const obj: Array<DailyChanges> = lastSevenDaysValues.slice(-1)
+        setNextDayPrediction(dayRes)
+        
+        const obj: Array<DailyChanges> = predictValues.slice(-1)
         const lastDay = new Date(obj[0].date)
         lastDay.setDate(lastDay.getDate() + 1)
         const nextDay = lastDay.toISOString().split('T')[0]
-        console.log('nextDayPrediction', nextDayPrediction)
+  
         const predicted: DailyChanges = {
           date: nextDay,
           close: dayRes.next_day_price
         }
-        setLastSevenDaysValues([...lastSevenDaysValues, predicted])
+        setPredictValues([...predictValues, predicted])
       } catch (err) {
         console.error('Failed to load predictions', err)
       } finally {
@@ -288,8 +277,55 @@ export default function Home() {
     }
     fetchData()
   }
-  /////////////////////////////////////////////////////////////////////////////////////////
 
+  const onNextWeekPredictBtnPress = () => {
+    if (isSinglePredicted) {
+      predictValues.splice(-1)
+      setPredictValues([...predictValues])
+      setIsSinglePredicted(false)
+    }
+    const fetchData = async () => {
+      try {
+        const predictArr = []
+        const weekRes = await getNextWeekPrediction()
+        setNextWeekPrediction(weekRes)
+        const obj: Array<DailyChanges> = predictValues.slice(-1)
+        const lastDay = new Date(obj[0].date)
+        for (let i=0; i<7;i++) {
+          lastDay.setDate(lastDay.getDate() + 1)
+          const nextDay = lastDay.toISOString().split('T')[0]
+          const predicted: DailyChanges = {
+            date: nextDay,
+            close: weekRes.next_7_days[i]
+          }
+          predictArr.push(predicted)
+        }
+        setPredictValues([...predictValues, ...predictArr])
+      }
+      catch (err) {
+        console.log('Failed to load predictions', err)
+      }
+      finally {
+        setIsMultiplePredicted(true)
+      }
+    }
+    fetchData()
+  }
+
+  const onResetData = () => {
+    if (isSinglePredicted) {
+      predictValues.splice(-1)
+      setPredictValues([...predictValues])
+      setIsSinglePredicted(false)
+      setIsReset(true)
+    }
+    if (isMultiplePredicted) {
+      predictValues.splice(-7)
+      setPredictValues([...predictValues])
+      setIsMultiplePredicted(false)
+      setIsReset(true)
+    }
+  }
 
   if (isLoading) return <Loader/>
   const {chartData, options} = generateChartData()
@@ -307,7 +343,9 @@ export default function Home() {
           <h4>{endDate}</h4>
         </div>
       </div>
-      <LineChart data={chartData} options={options} />
+      <div style={{ width: '100%', height: '350px' }}>
+        <LineChart data={chartData} options={options} />
+      </div>
       <div className={styles.inputWrapper}>
         <div className={styles.inputInnerWrapper}>
           <label htmlFor="year" className={styles.inputLabel}>Set a year</label>
@@ -332,12 +370,21 @@ export default function Home() {
         <button onClick={onBtnClick} className={styles.filterBtn}>Filter</button>
       </div>
       <div className={styles.predictedChartWrapper}>
+      <div style={{ width: '100%', height: '350px' }}>
         <LineChart data={predictedChartData} options={PredictedChartOptions} />
+      </div>
+      <div className={styles.btnWrapper}>
+        <button onClick={onNextDayPredictBtnPress} className={styles.predictBtn}>Predict Tomorrow</button>
+       
+        <button onClick={onNextWeekPredictBtnPress} className={styles.predictBtn}>Predict Week</button>
+       
+        <button onClick={onResetData} className={styles.resetBtn}>Reset</button>
+      </div>
         {
-          !isSinglePredicted &&  <button onClick={onPredictBtnPress} className={styles.predictBtn}>Predict</button>
+          (isSinglePredicted && !isReset) && <h5 className={styles.predictedText}>Predicted price is ${nextDayPrediction?.next_day_price}</h5>
         }
         {
-          isSinglePredicted && <h4>Predicted price is ${nextDayPrediction?.next_day_price}</h4>
+          isMultiplePredicted && <h5 className={styles.predictedText}>Predicted prices are $ {nextWeekPrediction?.next_7_days.map(item => `$${item}`).join(' ')}</h5>
         }
       </div>
       </main>
