@@ -359,7 +359,7 @@ export default function Home() {
   if (isLoading) return <Loader/>
   const {chartData, options} = generateChartData()
   const { predictedChartData, PredictedChartOptions } = generatePredictedChartData()
-  const { yearlySummary, monthlySummary } = formatSummaryData()
+  const { yearlySummary } = formatSummaryData()
   return (
     <div className={styles.page}>
       <main className={styles.main}>
