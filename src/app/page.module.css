@@ -199,6 +199,32 @@ a.secondary {
   flex-direction: row;
 }
 
+.tableWrapper {
+  display: flex;
+  flex-direction: column;
+  align-self: center;
+  align-items: center;
+}
+
+.summaryTable {
+  border: 1px solid #ff2200;
+  table-layout: fixed;
+  border-collapse: collapse;
+  margin: 20;
+}
+
+.summaryTable th,
+.summaryTable td {
+  width: 25%;
+  text-align: center;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  word-wrap: break-word;
+}
+
+.tableHeader {
+  background-color: #ff2200;
+}
 
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {

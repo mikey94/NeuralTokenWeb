@@ -3,7 +3,7 @@
 
 import styles from "./page.module.css";
 import { useEffect, useState  } from "react";
-import { getNextDayPrediction, getNextWeekPrediction, getDailyChanges, getStartDateOfRecords, getEndDateOfRecords } from '@/services/crypto.service';
+import { getNextDayPrediction, getNextWeekPrediction, getDailyChanges, getStartDateOfRecords, getEndDateOfRecords, getSummary, Summary } from '@/services/crypto.service';
 import Loader from "@/components/Loader/loader";
 import LineChart from "@/components/LineChart/lineChart";
 
@@ -24,13 +24,14 @@ type DailyChanges = {
 export default function Home() {
   const [nextDayPrediction, setNextDayPrediction] = useState<NextDayPrediction | null>(null)
   const [nextWeekPrediction, setNextWeekPrediction] = useState<NextWeekPrediction | null>(null)
-  const [isLoading, setIsLoading] = useState<boolean>(false)
+  const [isLoading, setIsLoading] = useState<boolean>(true)
   const [year, setYear] = useState<number>(2025)
   const [month, setMonth] = useState<number>(3)
   const [dailyChanges, setDailyChanges] = useState<Array<DailyChanges>>([])
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
   const [predictValues, setPredictValues] = useState<Array<DailyChanges>>([])
+  const [summary, setSummary] = useState<Summary>()
   const [isSinglePredicted, setIsSinglePredicted] = useState<boolean>(false);
   const [isMultiplePredicted, setIsMultiplePredicted] = useState<boolean>(false);
   const [isReset, setIsReset] = useState<boolean>(false);
@@ -61,17 +62,37 @@ export default function Home() {
         const dailyChanges: Array<DailyChanges> = await getDailyChanges(year, month)
         setDailyChanges(dailyChanges)
         setPredictValues(dailyChanges.slice(-7))
-        console.log('dailyChanges', dailyChanges)
       }
       catch (err) {
         console.log('Failed to load daily changes', err)
+        throw err
       }
       finally {
         setIsLoading(false)
       }
     }
     fetchDailyChanges()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const getSummaryData = () => {
+    const fetchSummary = async () => {
+      console.log('fetchSummary');
+      try {
+        const summary = await getSummary(year, month)
+        setSummary(summary)
+      }
+      catch (err) {
+        console.log('Failed to load summary details', err)
+      }
+    }
+    fetchSummary()
+  }
+  useEffect(() => {
+    if(!isLoading) {
+      getSummaryData()
+    }
+  }, [isLoading])
 
   const generateChartData = () => {
     const labels: Array<string> = []
@@ -169,6 +190,7 @@ export default function Home() {
       }
     }
     fetchDailyChanges()
+    getSummaryData()
   }
   //////////////////////////////////////////////////////////////////////////////////////////
 
@@ -327,9 +349,17 @@ export default function Home() {
     }
   }
 
+  const formatSummaryData = () => {
+    const yearlySummary = summary?.yearly[0]
+    const monthlySummary = summary?.monthly[0]
+    return { yearlySummary, monthlySummary }
+  }
+  formatSummaryData()
+
   if (isLoading) return <Loader/>
   const {chartData, options} = generateChartData()
   const { predictedChartData, PredictedChartOptions } = generatePredictedChartData()
+  const { yearlySummary, monthlySummary } = formatSummaryData()
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -368,6 +398,30 @@ export default function Home() {
           />
         </div>
         <button onClick={onBtnClick} className={styles.filterBtn}>Filter</button>
+      </div>
+      <div className={styles.tableWrapper}>
+        <h4>Year Summary</h4>
+        {
+          yearlySummary && 
+          <table className={styles.summaryTable}>
+            <thead className={styles.tableHeader}>
+              <tr>
+                <th>Min</th>
+                <th>Max</th>
+                <th>Mean</th>
+                <th>Last</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>${yearlySummary.min}</td>
+                <td>${yearlySummary.max}</td>
+                <td>${yearlySummary.mean}</td>
+                <td>${yearlySummary.last}</td>
+              </tr>
+            </tbody>
+          </table>
+        }
       </div>
       <div className={styles.predictedChartWrapper}>
       <div style={{ width: '100%', height: '350px' }}>
