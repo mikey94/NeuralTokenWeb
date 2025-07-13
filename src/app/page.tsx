@@ -7,13 +7,13 @@ import { getNextDayPrediction, getNextWeekPrediction, getDailyChanges, getStartD
 import Loader from "@/components/Loader/loader";
 import LineChart from "@/components/LineChart/lineChart";
 
-type NextDayPrediction = {
-  next_day_price: number 
-}
+// type NextDayPrediction = {
+//   next_day_price: number 
+// }
 
-type NextWeekPrediction = {
-  next_7_days: Array<number>
-}
+// type NextWeekPrediction = {
+//   next_7_days: Array<number>
+// }
 
 type DailyChanges = {
   date: string,
@@ -21,12 +21,27 @@ type DailyChanges = {
   close: number
 }
 
+const currencies = [
+  {
+    id: 1,
+    name: 'ethereum'
+  },
+  {
+    id: 2,
+    name: 'bitcoin'
+  },
+  {
+    id: 3,
+    name: 'xrp'
+  }
+]
+
 export default function Home() {
-  const [nextDayPrediction, setNextDayPrediction] = useState<NextDayPrediction | null>(null)
-  const [nextWeekPrediction, setNextWeekPrediction] = useState<NextWeekPrediction | null>(null)
+  // const [nextDayPrediction, setNextDayPrediction] = useState<NextDayPrediction | null>(null)
+  // const [nextWeekPrediction, setNextWeekPrediction] = useState<NextWeekPrediction | null>(null)
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [year, setYear] = useState<number>(2025)
-  const [month, setMonth] = useState<number>(3)
+  const [month, setMonth] = useState<number>(7)
   const [dailyChanges, setDailyChanges] = useState<Array<DailyChanges>>([])
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
@@ -35,16 +50,17 @@ export default function Home() {
   const [isSinglePredicted, setIsSinglePredicted] = useState<boolean>(false);
   const [isMultiplePredicted, setIsMultiplePredicted] = useState<boolean>(false);
   const [isReset, setIsReset] = useState<boolean>(false);
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('ethereum')
 
   useEffect(() => {
     const getRecordsDetails = async() => {
       setStartDate('')
       setEndDate('')
       try {
-        const recordDetailsStartDate = await getStartDateOfRecords()
-        const recordDetailsEndDate = await getEndDateOfRecords()
-        setStartDate(recordDetailsStartDate.date)
-        setEndDate(recordDetailsEndDate.date)
+        const recordDetailsStartDate = await getStartDateOfRecords(selectedCurrency)
+        const recordDetailsEndDate = await getEndDateOfRecords(selectedCurrency)
+        setStartDate(recordDetailsStartDate)
+        setEndDate(recordDetailsEndDate)
       }
       catch (err) {
         console.log('getRecordsDetails', err)
@@ -52,14 +68,14 @@ export default function Home() {
       }
     }
     getRecordsDetails()
-  }, [])
+  }, [selectedCurrency])
 
   useEffect(() => {
     setIsLoading(true)
     const fetchDailyChanges = async () => {
       setDailyChanges([])
       try {
-        const dailyChanges: Array<DailyChanges> = await getDailyChanges(year, month)
+        const dailyChanges: Array<DailyChanges> = await getDailyChanges(selectedCurrency,year, month)
         setDailyChanges(dailyChanges)
         setPredictValues(dailyChanges.slice(-7))
       }
@@ -73,13 +89,12 @@ export default function Home() {
     }
     fetchDailyChanges()
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [selectedCurrency])
 
   const getSummaryData = () => {
     const fetchSummary = async () => {
-      console.log('fetchSummary');
       try {
-        const summary = await getSummary(year, month)
+        const summary = await getSummary(selectedCurrency, year, month)
         setSummary(summary)
       }
       catch (err) {
@@ -92,7 +107,7 @@ export default function Home() {
     if(!isLoading) {
       getSummaryData()
     }
-  }, [isLoading])
+  }, [isLoading, selectedCurrency])
 
   const generateChartData = () => {
     const labels: Array<string> = []
@@ -123,7 +138,7 @@ export default function Home() {
         },
         title: {
           display: true,
-          text: `Ethereum Price Variation in year ${year}`,
+          text: `${selectedCurrency.toUpperCase()} Price Variation in year ${year}`,
           color: '#ffff',
           font: {
             size: 16
@@ -179,7 +194,7 @@ export default function Home() {
     const fetchDailyChanges = async () => {
       setDailyChanges([])
       try {
-        const dailyChanges = await getDailyChanges(year, month)
+        const dailyChanges = await getDailyChanges(selectedCurrency, year, month)
         setDailyChanges(dailyChanges)
       }
       catch (err) {
@@ -228,7 +243,7 @@ export default function Home() {
         },
         title: {
           display: true,
-          text: `Ethereum predicted price chart - Next day`,
+          text: `${selectedCurrency.toUpperCase()} predicted price chart - Next day`,
           color: '#ffff',
           font: {
             size: 16
@@ -276,9 +291,9 @@ export default function Home() {
     }
     const fetchData = async () => {
       try {
-        const dayRes = await getNextDayPrediction()
+        const dayRes = await getNextDayPrediction(selectedCurrency)
 
-        setNextDayPrediction(dayRes)
+        // setNextDayPrediction(dayRes)
         
         const obj: Array<DailyChanges> = predictValues.slice(-1)
         const lastDay = new Date(obj[0].date)
@@ -309,8 +324,8 @@ export default function Home() {
     const fetchData = async () => {
       try {
         const predictArr = []
-        const weekRes = await getNextWeekPrediction()
-        setNextWeekPrediction(weekRes)
+        const weekRes = await getNextWeekPrediction(selectedCurrency)
+        // setNextWeekPrediction(weekRes)
         const obj: Array<DailyChanges> = predictValues.slice(-1)
         const lastDay = new Date(obj[0].date)
         for (let i=0; i<7;i++) {
@@ -356,13 +371,80 @@ export default function Home() {
   }
   formatSummaryData()
 
+  const onPressCurrency = (name: string) => {
+    setSelectedCurrency(name)
+  }
+
+  const generatePredictedTable = () => {
+    if (isSinglePredicted && !isReset) {
+      const data = predictValues.slice(-1)
+      return (
+        <div>
+          <table className={styles.summaryTable}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Predicted Price (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+            {
+              data.map((val) => (
+                <tr key={val.date.toString()}>
+                  <td>{val.date}</td>
+                  <td>{val.close}</td>
+                </tr>
+              ))
+            }
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+    if (isMultiplePredicted) {
+      const data = predictValues.slice(-7)
+      return (
+        <div>
+          <table className={styles.summaryTable}>
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Predicted Price (USD)</th>
+              </tr>
+            </thead>
+            <tbody>
+            {
+              data.map((val) => (
+                <tr key={val.date.toString()}>
+                  <td>{val.date}</td>
+                  <td>{val.close}</td>
+                </tr>
+              ))
+            }
+            </tbody>
+          </table>
+        </div>
+      )
+    }
+  }
   if (isLoading) return <Loader/>
   const {chartData, options} = generateChartData()
   const { predictedChartData, PredictedChartOptions } = generatePredictedChartData()
   const { yearlySummary } = formatSummaryData()
   return (
     <div className={styles.page}>
+      <div className={styles.blurOverlay} />
       <main className={styles.main}>
+        <h1 className={styles.title}>NeuralToken</h1>
+      <div>
+        {
+          currencies.map(({id, name}) => {
+            return (
+              <button key={id} onClick={() => onPressCurrency(name)}>{name}</button>
+            )
+          })
+        }
+      </div>
       <div className={styles.recordsWrapper}>
         <div className={styles.recordsInnerWrapper}>
           <h5>Start date of records</h5>
@@ -435,10 +517,7 @@ export default function Home() {
         <button onClick={onResetData} className={styles.resetBtn}>Reset</button>
       </div>
         {
-          (isSinglePredicted && !isReset) && <h5 className={styles.predictedText}>Predicted price is ${nextDayPrediction?.next_day_price}</h5>
-        }
-        {
-          isMultiplePredicted && <h5 className={styles.predictedText}>Predicted prices are $ {nextWeekPrediction?.next_7_days.map(item => `$${item}`).join(' ')}</h5>
+          generatePredictedTable()
         }
       </div>
       </main>

@@ -38,9 +38,9 @@ export type Summary = {
     monthly: Array<SummaryMonth>
 }
 
-export const getNextDayPrediction = async () => {
+export const getNextDayPrediction = async (coin: string) => {
     try {
-        const response = await api.get<NextDayPrediction>('/predict/next-day');
+        const response = await api.get<NextDayPrediction>(`/predict/next-day/${coin}`);
         return response.data;
     }
     catch (error) {
@@ -49,9 +49,9 @@ export const getNextDayPrediction = async () => {
     }
 };
 
-export const getNextWeekPrediction = async () => {
+export const getNextWeekPrediction = async (coin: string) => {
     try {
-        const response = await api.get<NextWeekPrediction>('/predict/next-7-days');
+        const response = await api.get<NextWeekPrediction>(`/predict/next-7-days/${coin}`);
         return response.data;
     }
     catch (error) {
@@ -60,7 +60,7 @@ export const getNextWeekPrediction = async () => {
     }
 };
 
-export const getSummary = async (year?: number, month?: number) => {
+export const getSummary = async (coin: string, year?: number, month?: number) => {
     try {
         const params = new URLSearchParams();
 
@@ -72,7 +72,7 @@ export const getSummary = async (year?: number, month?: number) => {
             params.append('month', month.toString());
         }
         const query = params.toString();
-        const url = query ? `/summary?${query}` : '/summary';
+        const url = query ? `/summary/${coin}?${query}` : `/summary/${coin}`;
 
         const response = await api.get<Summary>(url)
     
@@ -84,10 +84,10 @@ export const getSummary = async (year?: number, month?: number) => {
     }
 }
 
-export const getDailyChanges = async (year:number, month:number) => {
+export const getDailyChanges = async (coin: string, year:number, month:number) => {
     try {
-        const response = await api.get(`/daily-changes/${year}/${month}`);
-        return response.data;
+        const response = await api.get(`/daily-changes/${coin}/${year}/${month}`);
+        return response.data.daily_changes;
     }
     catch (error) {
         console.log('getDailyChanges', error);
@@ -95,10 +95,10 @@ export const getDailyChanges = async (year:number, month:number) => {
     }
 }
 
-export const getStartDateOfRecords = async () => {
+export const getStartDateOfRecords = async (coin: string) => {
     try {
-        const response = await api.get('/start-date');
-        return response.data;
+        const response = await api.get(`/start-date/${coin}`);
+        return response.data.start_date;
     }
     catch (error) {
         console.log('getStartDateOfRecords', error);
@@ -106,10 +106,10 @@ export const getStartDateOfRecords = async () => {
     }
 }
 
-export const getEndDateOfRecords = async () => {
+export const getEndDateOfRecords = async (coin: string) => {
     try {
-        const response = await api.get('/end-date');
-        return response.data;
+        const response = await api.get(`/end-date/${coin}`);
+        return response.data.end_date;
     }
     catch (error) {
         console.log('getEndDateOfRecords', error);
