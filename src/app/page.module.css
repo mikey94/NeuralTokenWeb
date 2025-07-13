@@ -12,9 +12,22 @@
   justify-items: center;
   min-height: 100svh;
   padding: 80px;
-  gap: 64px;
   font-family: var(--font-geist-sans);
+  background-image: url('/Cryptoback.png');
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  position: relative;
 }
+
+.page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-color: rgba(1, 6, 58, 0.6);
+}
+
 
 @media (prefers-color-scheme: dark) {
   .page {
@@ -27,11 +40,34 @@
   }
 }
 
+.blurOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  backdrop-filter: blur(12px); /* You can adjust the blur */
+  background-color: rgba(25, 25, 25, 0.5); /* Optional dark overlay */
+  z-index: 0;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+.title {
+  font-size: 36;
+  align-self: center;
+}
+
 .main {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   gap: 32px;
   grid-row-start: 2;
+  color: rgb(255, 255, 255);
+  padding: 2rem;
 }
 
 .main ol {
