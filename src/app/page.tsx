@@ -435,12 +435,12 @@ export default function Home() {
     <div className={styles.page}>
       <div className={styles.blurOverlay} />
       <main className={styles.main}>
-        <h1 className={styles.title}>NeuralToken</h1>
-      <div>
+      <h1 className={styles.title}>NeuralToken</h1>
+      <div className={styles.currencyBtnWrapper}>
         {
           currencies.map(({id, name}) => {
             return (
-              <button key={id} onClick={() => onPressCurrency(name)}>{name}</button>
+              <button className={styles.currencyBtn} key={id} onClick={() => onPressCurrency(name)}>{name}</button>
             )
           })
         }
@@ -467,6 +467,7 @@ export default function Home() {
             defaultValue={year.toString()}
             onChange={onInputChange}
             placeholder="Year"
+            className={styles.inputField}
           />
         </div>
         <div className={styles.inputInnerWrapper}>
@@ -477,6 +478,7 @@ export default function Home() {
             defaultValue={month.toString()}
             onChange={onInputChange}
             placeholder="Year"
+            className={styles.inputField}
           />
         </div>
         <button onClick={onBtnClick} className={styles.filterBtn}>Filter</button>
