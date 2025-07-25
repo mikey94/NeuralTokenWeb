@@ -262,6 +262,29 @@ a.secondary {
   background-color: #ff2200;
 }
 
+.inputField {
+  height: 30px;
+  padding-left: 5px;
+  background-color: transparent;
+  border: 2px solid #ffffff;
+  border-radius: 6px;
+}
+
+.currencyBtnWrapper {
+  display: flex;
+  align-self: center;
+}
+
+.currencyBtn {
+  height: 50px;
+  width: 100px;
+  margin: 10px;
+  border-radius: 10px;
+  border-color: transparent;
+  background-color: #1317f9;
+  font-size: 16px;
+}
+
 /* Enable hover only on non-touch devices */
 @media (hover: hover) and (pointer: fine) {
   a.primary:hover {
