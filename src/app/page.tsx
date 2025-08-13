@@ -39,9 +39,11 @@ const currencies = [
 export default function Home() {
   // const [nextDayPrediction, setNextDayPrediction] = useState<NextDayPrediction | null>(null)
   // const [nextWeekPrediction, setNextWeekPrediction] = useState<NextWeekPrediction | null>(null)
+  const defaultYear = 2025
+  const defaultMonth = 7
   const [isLoading, setIsLoading] = useState<boolean>(true)
-  const [year, setYear] = useState<number>(2025)
-  const [month, setMonth] = useState<number>(7)
+  const [year, setYear] = useState<number>(defaultYear)
+  const [month, setMonth] = useState<number>(defaultMonth)
   const [dailyChanges, setDailyChanges] = useState<Array<DailyChanges>>([])
   const [startDate, setStartDate] = useState<string>('')
   const [endDate, setEndDate] = useState<string>('')
@@ -49,7 +51,8 @@ export default function Home() {
   const [summary, setSummary] = useState<Summary>()
   const [isSinglePredicted, setIsSinglePredicted] = useState<boolean>(false);
   const [isMultiplePredicted, setIsMultiplePredicted] = useState<boolean>(false);
-  const [isReset, setIsReset] = useState<boolean>(false);
+  // const [isReset, setIsReset] = useState<boolean>(false);
+  const [isDisabled, setIsDisabled] = useState<boolean>(false)
   const [selectedCurrency, setSelectedCurrency] = useState<string>('ethereum')
 
   useEffect(() => {
@@ -243,7 +246,7 @@ export default function Home() {
         },
         title: {
           display: true,
-          text: `${selectedCurrency.toUpperCase()} predicted price chart - Next day`,
+          text: `${selectedCurrency.toUpperCase()} predicted price chart - ${isSinglePredicted ? 'Next day' : 'Next 7 days'}`,
           color: '#ffff',
           font: {
             size: 16
@@ -313,6 +316,7 @@ export default function Home() {
       
     }
     fetchData()
+    setIsDisabled(true)
   }
 
   const onNextWeekPredictBtnPress = () => {
@@ -347,6 +351,7 @@ export default function Home() {
       }
     }
     fetchData()
+    setIsDisabled(true)
   }
 
   const onResetData = () => {
@@ -354,13 +359,19 @@ export default function Home() {
       predictValues.splice(-1)
       setPredictValues([...predictValues])
       setIsSinglePredicted(false)
-      setIsReset(true)
+      // setIsReset(true)
+      setYear(defaultYear)
+      setMonth(defaultMonth)
+      setIsDisabled(false)
     }
     if (isMultiplePredicted) {
       predictValues.splice(-7)
       setPredictValues([...predictValues])
       setIsMultiplePredicted(false)
-      setIsReset(true)
+      // setIsReset(true)
+      setYear(defaultYear)
+      setMonth(defaultMonth)
+      setIsDisabled(false)
     }
   }
 
@@ -373,10 +384,11 @@ export default function Home() {
 
   const onPressCurrency = (name: string) => {
     setSelectedCurrency(name)
+    onResetData()
   }
 
   const generatePredictedTable = () => {
-    if (isSinglePredicted && !isReset) {
+    if (isSinglePredicted) {
       const data = predictValues.slice(-1)
       return (
         <div>
@@ -512,9 +524,9 @@ export default function Home() {
         <LineChart data={predictedChartData} options={PredictedChartOptions} />
       </div>
       <div className={styles.btnWrapper}>
-        <button onClick={onNextDayPredictBtnPress} className={styles.predictBtn}>Predict Tomorrow</button>
+        <button onClick={onNextDayPredictBtnPress} className={styles.predictBtn} disabled={isDisabled}>Predict Tomorrow</button>
        
-        <button onClick={onNextWeekPredictBtnPress} className={styles.predictBtn}>Predict Week</button>
+        <button onClick={onNextWeekPredictBtnPress} className={styles.predictBtn} disabled={isDisabled}>Predict Week</button>
        
         <button onClick={onResetData} className={styles.resetBtn}>Reset</button>
       </div>
