@@ -46,7 +46,7 @@
   left: 0;
   right: 0;
   bottom: 0;
-  backdrop-filter: blur(12px); /* You can adjust the blur */
+  backdrop-filter: blur(50px); /* You can adjust the blur */
   background-color: rgba(25, 25, 25, 0.5); /* Optional dark overlay */
   z-index: 0;
   height: 100%;
@@ -283,6 +283,17 @@ a.secondary {
   border-color: transparent;
   background-color: #1317f9;
   font-size: 16px;
+}
+
+.currencyBtnSelected {
+  height: 50px;
+  width: 100px;
+  margin: 10px;
+  border-radius: 10px;
+  border-color: transparent;
+  background-color: #f3eb00;
+  font-size: 16px;
+  color: black;
 }
 
 /* Enable hover only on non-touch devices */
