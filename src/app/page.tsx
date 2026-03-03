@@ -39,8 +39,9 @@ const currencies = [
 export default function Home() {
   // const [nextDayPrediction, setNextDayPrediction] = useState<NextDayPrediction | null>(null)
   // const [nextWeekPrediction, setNextWeekPrediction] = useState<NextWeekPrediction | null>(null)
-  const defaultYear = 2025
-  const defaultMonth = 7
+  const currentDate = new Date();
+  const defaultYear = currentDate.getFullYear()
+  const defaultMonth = currentDate.getMonth() + 1
   const [isLoading, setIsLoading] = useState<boolean>(true)
   const [year, setYear] = useState<number>(defaultYear)
   const [month, setMonth] = useState<number>(defaultMonth)
@@ -54,7 +55,7 @@ export default function Home() {
   // const [isReset, setIsReset] = useState<boolean>(false);
   const [isDisabled, setIsDisabled] = useState<boolean>(false)
   const [selectedCurrency, setSelectedCurrency] = useState<string>('ethereum')
-
+  
   useEffect(() => {
     const getRecordsDetails = async() => {
       setStartDate('')
@@ -452,7 +453,7 @@ export default function Home() {
         {
           currencies.map(({id, name}) => {
             return (
-              <button className={styles.currencyBtn} key={id} onClick={() => onPressCurrency(name)}>{name}</button>
+              <button className={selectedCurrency === name ? styles.currencyBtnSelected : styles.currencyBtn} key={id} onClick={() => onPressCurrency(name)}>{name}</button>
             )
           })
         }
